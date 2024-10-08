@@ -1,5 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import Cube from "./components/basic_shapes/cube.tsx";
+import Sphere from "./components/basic_shapes/sphere.tsx";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Cube pos={[-2, 2, 0]} size={[1, 1, 1]} color="green" />
         <Cube pos={[2, -2, 0]} size={[1, 1, 1]} color="orange" />
         <Cube pos={[-2, -2, 0]} size={[1, 1, 1]} color="purple" />
+        <Sphere />
       </group>
     </Canvas>
   );
