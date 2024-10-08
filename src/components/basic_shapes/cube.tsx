@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import { BoxGeometry, Mesh } from "three";
+import { Mesh } from "three";
 
 export default function Cube(props: {
   pos: [number, number, number];
@@ -10,7 +10,7 @@ export default function Cube(props: {
   const { pos, size, color } = props;
   const ref = useRef<Mesh>(new Mesh());
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     ref.current.rotation.x += delta;
   });
 
