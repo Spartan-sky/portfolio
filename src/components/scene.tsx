@@ -1,39 +1,66 @@
-import { OrbitControls, useHelper } from "@react-three/drei";
-import { useLoader } from "@react-three/fiber";
-import { GLTFLoader } from "three/examples/jsm/Addons.js";
-import Cube from "./basic_shapes/cube";
-import Sphere from "./basic_shapes/sphere";
-import { useRef } from "react";
+import * as THREE from "three";
+
+import { useHelper } from "@react-three/drei";
+import { useMemo, useRef, useState } from "react";
 import { DirectionalLightHelper } from "three";
+import MonkeyTest from "./monkeyTest";
 
-const Model = () => {
-  const gltf = useLoader(GLTFLoader, "./LowpolyHouseIsland.gltf");
-
-  return <primitive object={gltf.scene} scale={0.4} />;
-};
+import frag from "../shaders/fragmentShader.glsl?raw";
+import vert from "../shaders/vertexShader.glsl?raw";
+import { useFrame } from "@react-three/fiber";
 
 export default function Scene() {
-  const directionalLightRef = useRef<any>();
+  const [_univTime, setUnivTime] = useState(0);
+
+  useFrame((state) => {
+    const { clock } = state;
+    setUnivTime(clock.getElapsedTime());
+  });
+
+  // console.log("univTime:", univTime);
+
+  const mesh = useRef<any>(null!);
+  const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
+
+  // console.log("DirLight", directionalLightRef);
+  // console.log("Type of mesh", typeof mesh);
+  // console.log("Type of mesh.current", typeof mesh.current);
+  // console.log("Mesh", mesh);
 
   useHelper(directionalLightRef, DirectionalLightHelper);
 
+  const uniforms = useMemo(
+    () => ({
+      u_time: {
+        value: 0.0,
+      },
+      u_color: {
+        value: new THREE.Color(1, 1, 1),
+      },
+    }),
+    []
+  );
+
+  useFrame((state) => {
+    const { clock } = state;
+    mesh.current.material.uniforms.u_time.value = clock.getElapsedTime();
+  });
+
   return (
     <>
-      <directionalLight
-        position={[3, 5, 4]}
-        intensity={2}
-        ref={directionalLightRef}
-      />
-      <ambientLight color="red" intensity={1} />
-      <group position={[0, 0, 0]}>
-        <Cube pos={[2, 2, 0]} size={[1, 1, 1]} color="blue" />
-        <Cube pos={[-2, 2, 0]} size={[1, 1, 1]} color="green" />
-        <Cube pos={[2, -2, 0]} size={[1, 1, 1]} color="orange" />
-        <Cube pos={[-2, -2, 0]} size={[1, 1, 1]} color="purple" />
-        <Sphere />
-      </group>
-      <Model />
-      <OrbitControls />
+      <mesh ref={mesh}>
+        <directionalLight
+          position={[3, 5, 4]}
+          intensity={1}
+          ref={directionalLightRef}
+        />
+        <MonkeyTest />
+        <shaderMaterial
+          vertexShader={vert}
+          fragmentShader={frag}
+          uniforms={uniforms}
+        />
+      </mesh>
     </>
   );
 }
