@@ -5,34 +5,20 @@ import { Canvas, extend } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import vertexShader from "./shaders/vertexShader.glsl?raw";
 import fragmentShader from "./shaders/fragmentShader.glsl?raw";
+import Blob from "./components/cmp_shapes/Blob";
+import Scene from "./components/scene";
 
-const MyShaderMaterial = shaderMaterial({}, vertexShader, fragmentShader);
-
-extend({ MyShaderMaterial });
-
-const Flag = () => {
-  return (
-    <mesh
-      // ref={mesh}
-      position={[0, 0, 0]}
-      rotation={[-Math.PI / 2, 0, 0]}
-      scale={1.5}
-    >
-      <planeGeometry args={[1, 1, 32, 32]} />
-      <shaderMaterial
-        fragmentShader={fragmentShader}
-        vertexShader={vertexShader}
-        wireframe
-      />
-    </mesh>
-  );
-};
+import frag from "./shaders/fragmentShader.glsl?raw";
+import vert from "./shaders/vertexShader.glsl?raw";
 
 function App() {
   return (
     <Canvas camera={{ position: [1.0, 1.0, 1.0] }}>
-      <Flag />
-      <axesHelper />
+      <mesh>
+        <Scene />
+        <sphereGeometry />
+        <shaderMaterial fragmentShader={frag} vertexShader={vert} />
+      </mesh>
       <OrbitControls />
     </Canvas>
   );
