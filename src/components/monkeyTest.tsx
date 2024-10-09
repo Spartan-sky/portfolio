@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, useKeyboardControls } from "@react-three/drei";
 import { GLTF } from "three-stdlib";
 
-import frag from "../shaders/fragmentShader.glsl?raw";
-import vert from "../shaders/vertexShader.glsl?raw";
-import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+// import frag from "../shaders/fragmentShader.glsl?raw";
+// import vert from "../shaders/vertexShader.glsl?raw";
+import { useRef } from "react";
+// import { useFrame } from "@react-three/fiber";
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -17,40 +17,46 @@ type GLTFResult = GLTF & {
 function Model(props: JSX.IntrinsicElements["group"]) {
   const mesh = useRef<any>();
 
-  const uniforms = useMemo(
-    () => ({
-      u_time: {
-        value: 0.0,
-      },
-      u_color: {
-        value: new THREE.Color(1, 1, 1),
-      },
-    }),
-    []
-  );
+  const [, get] = useKeyboardControls();
 
-  useFrame((state) => {
-    const { clock } = state;
-    mesh.current.material.uniforms.u_time.value = clock.getElapsedTime();
-  });
+  console.log("get:", get());
 
-  const { nodes, materials } = useGLTF("/monkey.gltf") as GLTFResult;
+  // useFrame((state) => {
+  //   // const { forward, backward, left, right, jump } = get();
+  // });
 
-  materials;
+  // const uniforms = useMemo(
+  //   () => ({
+  //     u_time: {
+  //       value: 0.0,
+  //     },
+  //     u_color: {
+  //       value: new THREE.Color(1, 1, 1),
+  //     },
+  //   }),
+  //   []
+  // );
 
-  console.log("Nodes:", nodes);
+  // useFrame((state) => {
+  //   const { clock } = state;
+  //   mesh.current.material.uniforms.u_time.value = clock.getElapsedTime();
+  // });
+
+  const { nodes } = useGLTF("/monkey.gltf") as GLTFResult;
+
   return (
     <group {...props} dispose={null}>
       <mesh
         ref={mesh}
         geometry={nodes.Suzanne.geometry}
         material={nodes.Suzanne.material}
+        position={!get().forward ? [0, 0, 0] : [1, 1, 1]}
       >
-        <shaderMaterial
+        {/* <shaderMaterial
           vertexShader={vert}
           fragmentShader={frag}
           uniforms={uniforms}
-        />
+          /> */}
       </mesh>
     </group>
   );
