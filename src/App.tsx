@@ -3,11 +3,11 @@ import { Canvas } from "@react-three/fiber";
 import Scene from "./components/scene";
 
 const keyboardMap = [
-  { name: "forward", keys: ["ArrowUp", "w", "W"] },
-  { name: "backward", keys: ["ArrowDown", "s", "S"] },
-  { name: "left", keys: ["ArrowLeft", "a", "A"] },
-  { name: "right", keys: ["ArrowRight", "d", "D"] },
-  { name: "jump", keys: ["Space"] },
+  { name: "forward", keys: ["w", "W", "ArrowUp"] },
+  { name: "backward", keys: ["s", "S", "ArrowDown"] },
+  { name: "left", keys: ["a", "A", "ArrowLeft"] },
+  { name: "right", keys: ["d", "D", "ArrowRight"] },
+  { name: "boost", keys: ["Shift"] },
 ];
 
 function App() {

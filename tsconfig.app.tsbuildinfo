@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/basicshapes.tsx","./src/components/scene.tsx","./src/components/basic_shapes/cube.tsx","./src/components/basic_shapes/sphere.tsx"],"version":"5.6.2"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/charactercontroller.tsx","./src/components/scene.tsx","./src/components/spaceship.tsx","./src/components/basic_shapes/cube.tsx","./src/components/basic_shapes/sphere.tsx","./src/components/cmp_shapes/blob.tsx"],"version":"5.6.2"}
