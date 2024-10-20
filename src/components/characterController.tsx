@@ -5,6 +5,7 @@ import { Group, Vector3 } from "three";
 import { useFrame } from "@react-three/fiber";
 import { useKeyboardControls } from "@react-three/drei";
 import { degToRad, MathUtils } from "three/src/math/MathUtils.js";
+import isMobileWidth from "./isMobileWidth";
 
 const normalizeAngle = (angle: number) => {
   while (angle > Math.PI) angle -= 2 * Math.PI;
@@ -27,8 +28,8 @@ const lerpAngle = (start: number, end: number, t: number) => {
 };
 
 export const CharacterController = () => {
-  const NORMAL_SPEED = 0.8;
-  const BOOST_SPEED = 1.6;
+  const NORMAL_SPEED = 1.6;
+  const BOOST_SPEED = 3.2;
   const ROT_SPEED = degToRad(0.5);
 
   const rb = useRef<RapierRigidBody>(null);
@@ -45,6 +46,8 @@ export const CharacterController = () => {
   const [, get] = useKeyboardControls();
 
   const isClicking = useRef(false);
+
+  const isMobile = isMobileWidth();
 
   useEffect(() => {
     const onMouseDown = () => {
@@ -119,7 +122,7 @@ export const CharacterController = () => {
       character.current.rotation.y = lerpAngle(
         character.current.rotation.y,
         characterRotationTarget.current,
-        0.1
+        0.02
       );
 
       rb.current.setLinvel(vel, true);
@@ -148,7 +151,11 @@ export const CharacterController = () => {
       <RigidBody lockRotations ref={rb}>
         <group ref={container}>
           <group ref={cameraTarget} position-z={1.5} />
-          <group ref={cameraPosition} position-y={6} position-z={-4} />
+          <group
+            ref={cameraPosition}
+            position-y={!isMobile ? 4 : 12}
+            position-z={!isMobile ? -4 : -8}
+          />
           <group ref={character}>
             <Spaceship />
           </group>
