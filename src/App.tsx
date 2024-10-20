@@ -1,4 +1,4 @@
-import { KeyboardControls, OrbitControls, Sky } from "@react-three/drei";
+import { KeyboardControls, Sky } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import Scene from "./components/scene";
 
@@ -13,18 +13,18 @@ const keyboardMap = [
 function App() {
   return (
     <KeyboardControls map={keyboardMap}>
-      <Canvas>
+      <Canvas shadows style={{ touchAction: "none" }}>
         <Sky sunPosition={[100, 20, 100]} />
         <ambientLight intensity={0.3} />
         <directionalLight position={[2, 2, 2]} />
         <Scene />
-        <OrbitControls
+        {/* <OrbitControls
           enableDamping
           minDistance={5}
           maxDistance={15}
           enablePan={false}
           maxPolarAngle={Math.PI / 2 - 0.05}
-        />
+        /> */}
       </Canvas>
     </KeyboardControls>
   );
