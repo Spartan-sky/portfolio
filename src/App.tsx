@@ -16,15 +16,8 @@ function App() {
       <Canvas shadows style={{ touchAction: "none" }}>
         <Sky sunPosition={[100, 20, 100]} />
         <ambientLight intensity={0.3} />
-        <directionalLight position={[2, 2, 2]} />
+        <directionalLight castShadow position={[2, 2, 2]} />
         <Scene />
-        {/* <OrbitControls
-          enableDamping
-          minDistance={5}
-          maxDistance={15}
-          enablePan={false}
-          maxPolarAngle={Math.PI / 2 - 0.05}
-        /> */}
       </Canvas>
     </KeyboardControls>
   );

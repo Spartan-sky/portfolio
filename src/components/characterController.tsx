@@ -1,11 +1,11 @@
 import { RapierRigidBody, RigidBody } from "@react-three/rapier";
-import Spaceship from "./spaceship";
 import { useEffect, useRef } from "react";
 import { Group, Vector3 } from "three";
 import { useFrame } from "@react-three/fiber";
 import { useKeyboardControls } from "@react-three/drei";
 import { degToRad, MathUtils } from "three/src/math/MathUtils.js";
 import isMobileWidth from "./isMobileWidth";
+import Helicopter from "./helicopter";
 
 const normalizeAngle = (angle: number) => {
   while (angle > Math.PI) angle -= 2 * Math.PI;
@@ -31,6 +31,7 @@ export const CharacterController = () => {
   const NORMAL_SPEED = 1.6;
   const BOOST_SPEED = 3.2;
   const ROT_SPEED = degToRad(0.5);
+  const MAX_Y = 2;
 
   const rb = useRef<RapierRigidBody>(null);
   const container = useRef<Group>(null!);
@@ -46,6 +47,7 @@ export const CharacterController = () => {
   const [, get] = useKeyboardControls();
 
   const isClicking = useRef(false);
+  const isTouching = useRef(false);
 
   const isMobile = isMobileWidth();
 
@@ -56,15 +58,21 @@ export const CharacterController = () => {
     const onMouseUp = () => {
       isClicking.current = false;
     };
+    const onTouchingStart = () => {
+      isTouching.current = true;
+    };
+    const onTouchingEnd = () => {
+      isTouching.current = false;
+    };
     document.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mouseup", onMouseUp);
-    document.addEventListener("touchstart", onMouseDown);
-    document.addEventListener("touchend", onMouseUp);
+    document.addEventListener("touchstart", onTouchingStart);
+    document.addEventListener("touchend", onTouchingEnd);
     return () => {
       document.removeEventListener("mousedown", onMouseDown);
       document.removeEventListener("mouseup", onMouseUp);
-      document.removeEventListener("touchstart", onMouseDown);
-      document.removeEventListener("touchend", onMouseUp);
+      document.removeEventListener("touchstart", onTouchingStart);
+      document.removeEventListener("touchend", onTouchingEnd);
     };
   }, []);
 
@@ -74,20 +82,23 @@ export const CharacterController = () => {
 
       const movement = {
         x: 0,
+        y: 0,
         z: 0,
       };
 
       if (get().forward) {
         movement.z = 1;
+        movement.y += movement.y < MAX_Y ? 1 : 0;
+        console.log(movement.y);
       }
 
       if (get().backward) {
-        movement.z = -1;
+        movement.z = -0.2;
       }
 
       let speed = !get().boost ? NORMAL_SPEED : BOOST_SPEED;
 
-      if (isClicking.current) {
+      if (isClicking.current || isTouching.current) {
         if (Math.abs(pointer.x) > 0.1) {
           movement.x = -pointer.x;
         }
@@ -107,22 +118,28 @@ export const CharacterController = () => {
       }
 
       if (movement.x !== 0) {
-        rotationTarget.current += ROT_SPEED * movement.x;
+        rotationTarget.current += ROT_SPEED * movement.x * 0.5;
+      }
+
+      if (movement.x === 0 || movement.z === 0) {
+        characterRotationTarget.current = 0;
       }
 
       if (movement.x !== 0 || movement.z !== 0) {
-        characterRotationTarget.current = Math.atan2(movement.x, movement.z);
+        characterRotationTarget.current =
+          Math.atan2(movement.x, movement.z) * 0.2;
         vel.x =
           Math.sin(rotationTarget.current + characterRotationTarget.current) *
           speed;
         vel.z =
           Math.cos(rotationTarget.current + characterRotationTarget.current) *
           speed;
+        vel.y = movement.y;
       }
-      character.current.rotation.y = lerpAngle(
-        character.current.rotation.y,
-        characterRotationTarget.current,
-        0.02
+      character.current.rotation.z = lerpAngle(
+        character.current.rotation.z,
+        -characterRotationTarget.current,
+        isTouching.current ? 0.03 : 0.01
       );
 
       rb.current.setLinvel(vel, true);
@@ -153,11 +170,11 @@ export const CharacterController = () => {
           <group ref={cameraTarget} position-z={1.5} />
           <group
             ref={cameraPosition}
-            position-y={!isMobile ? 4 : 12}
-            position-z={!isMobile ? -4 : -8}
+            position-y={!isMobile ? 10 : 16}
+            position-z={!isMobile ? -10 : -14}
           />
           <group ref={character}>
-            <Spaceship />
+            <Helicopter />
           </group>
         </group>
       </RigidBody>
