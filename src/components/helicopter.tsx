@@ -1,8 +1,7 @@
 import { useGLTF } from "@react-three/drei";
 
 export function Model() {
-  const gltf = useGLTF("./helicopter.glb");
-  console.log(gltf);
+  const gltf = useGLTF("./Models/helicopter2.glb");
 
   return (
     <>
@@ -15,4 +14,4 @@ export default function Helicopter() {
   return <Model />;
 }
 
-useGLTF.preload("./helicopter.glb");
+useGLTF.preload("./Models/helicopter.glb");

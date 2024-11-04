@@ -1,8 +1,13 @@
 import { RapierRigidBody, RigidBody } from "@react-three/rapier";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Group, Vector3 } from "three";
 import { useFrame } from "@react-three/fiber";
-import { useKeyboardControls } from "@react-three/drei";
+import {
+  PositionalAudio,
+  useAnimations,
+  useGLTF,
+  useKeyboardControls,
+} from "@react-three/drei";
 import { degToRad, MathUtils } from "three/src/math/MathUtils.js";
 import isMobileWidth from "./isMobileWidth";
 import Helicopter from "./helicopter";
@@ -28,11 +33,22 @@ const lerpAngle = (start: number, end: number, t: number) => {
 };
 
 export const CharacterController = () => {
+  const { scene, nodes, materials, animations } = useGLTF(
+    "./Models/helicopter2.glb"
+  );
+  nodes;
+  materials;
+
+  const { actions, names, mixer } = useAnimations(animations, scene);
+
   const NORMAL_SPEED = 1.6;
   const BOOST_SPEED = 3.2;
   const ROT_SPEED = degToRad(0.5);
-  const MAX_Y = 2;
+  const MAX_Y = 6;
 
+  const [isStarting, setStarting] = useState<Boolean>(false);
+
+  const heliAudio = useRef<any>(null);
   const rb = useRef<RapierRigidBody>(null);
   const container = useRef<Group>(null!);
   const character = useRef<Group>(null!);
@@ -76,7 +92,9 @@ export const CharacterController = () => {
     };
   }, []);
 
-  useFrame(({ camera, pointer }) => {
+  useFrame(({ camera, pointer, clock }) => {
+    mixer.setTime(clock.getElapsedTime() * 2);
+
     if (rb.current) {
       const vel = rb.current.linvel();
 
@@ -86,10 +104,16 @@ export const CharacterController = () => {
         z: 0,
       };
 
+      if (isStarting && vel.x <= 0.0001 && vel.y <= 0.0001 && vel.z <= 0.0001) {
+        heliAudio.current.stop();
+        actions[names[0]]?.reset().fadeIn(0.5).stop();
+        actions[names[1]]?.reset().fadeIn(0.5).stop();
+        setStarting(!isStarting);
+      }
+
       if (get().forward) {
         movement.z = 1;
-        movement.y += movement.y < MAX_Y ? 1 : 0;
-        console.log(movement.y);
+        movement.y += rb.current.translation().y < MAX_Y ? 1 : 0;
       }
 
       if (get().backward) {
@@ -126,6 +150,12 @@ export const CharacterController = () => {
       }
 
       if (movement.x !== 0 || movement.z !== 0) {
+        if (!isStarting) {
+          heliAudio.current.play();
+          setStarting(!isStarting);
+          actions[names[0]]?.reset().fadeIn(0.5).play();
+          actions[names[1]]?.reset().fadeIn(0.5).play();
+        }
         characterRotationTarget.current =
           Math.atan2(movement.x, movement.z) * 0.2;
         vel.x =
@@ -172,6 +202,11 @@ export const CharacterController = () => {
             ref={cameraPosition}
             position-y={!isMobile ? 10 : 16}
             position-z={!isMobile ? -10 : -14}
+          />
+          <PositionalAudio
+            url="./Sounds/heliSound.mp3"
+            distance={1}
+            ref={heliAudio}
           />
           <group ref={character}>
             <Helicopter />
