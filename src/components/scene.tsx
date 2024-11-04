@@ -12,6 +12,7 @@ export default function Scene() {
           <group>
             <mesh receiveShadow position={[0, 0, 0]} scale={[100, 1, 100]}>
               <boxGeometry />
+              <meshStandardMaterial color="white" />
             </mesh>
           </group>
         </RigidBody>

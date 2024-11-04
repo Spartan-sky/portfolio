@@ -14,9 +14,9 @@ function App() {
   return (
     <KeyboardControls map={keyboardMap}>
       <Canvas shadows style={{ touchAction: "none" }}>
-        <Sky sunPosition={[100, 20, 100]} />
+        {/* <Sky sunPosition={[100, 20, 100]} /> */}
         <ambientLight intensity={0.3} />
-        <directionalLight castShadow position={[2, 2, 2]} />
+        <directionalLight castShadow position={[20, 2, 2]} />
         <Scene />
       </Canvas>
     </KeyboardControls>

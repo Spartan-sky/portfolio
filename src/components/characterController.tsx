@@ -36,6 +36,7 @@ export const CharacterController = () => {
   const { scene, nodes, materials, animations } = useGLTF(
     "./Models/helicopter2.glb"
   );
+  console.log(scene);
   nodes;
   materials;
 
@@ -66,6 +67,12 @@ export const CharacterController = () => {
   const isTouching = useRef(false);
 
   const isMobile = isMobileWidth();
+
+  useEffect(() => {
+    scene.traverse((child) => {
+      child.castShadow = true;
+    });
+  });
 
   useEffect(() => {
     const onMouseDown = () => {
