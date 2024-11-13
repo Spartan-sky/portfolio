@@ -36,11 +36,10 @@ export const CharacterController = () => {
   const { scene, nodes, materials, animations } = useGLTF(
     "./Models/helicopter2.glb"
   );
-  console.log(scene);
   nodes;
   materials;
 
-  const { actions, names, mixer } = useAnimations(animations, scene);
+  const { actions, names } = useAnimations(animations, scene);
 
   const NORMAL_SPEED = 1.6;
   const BOOST_SPEED = 3.2;
@@ -48,8 +47,11 @@ export const CharacterController = () => {
   const MAX_Y = 6;
 
   const [isStarting, setStarting] = useState<Boolean>(false);
+  const [idleTimeBeforeFlying, setIdleTimeBeforeFlying] = useState<number>(0);
+  const [timeBeforeStopIdle, setTimeBeforeStopIdle] = useState<number>(0);
 
   const heliAudio = useRef<any>(null);
+
   const rb = useRef<RapierRigidBody>(null);
   const container = useRef<Group>(null!);
   const character = useRef<Group>(null!);
@@ -100,7 +102,7 @@ export const CharacterController = () => {
   }, []);
 
   useFrame(({ camera, pointer, clock }) => {
-    mixer.setTime(clock.getElapsedTime() * 2);
+    // mixer.setTime(clock.getElapsedTime() * 2);
 
     if (rb.current) {
       const vel = rb.current.linvel();
@@ -111,11 +113,23 @@ export const CharacterController = () => {
         z: 0,
       };
 
-      if (isStarting && vel.x <= 0.0001 && vel.y <= 0.0001 && vel.z <= 0.0001) {
-        heliAudio.current.stop();
-        actions[names[0]]?.reset().fadeIn(0.5).stop();
-        actions[names[1]]?.reset().fadeIn(0.5).stop();
-        setStarting(!isStarting);
+      if (
+        isStarting &&
+        vel.x <= 0.0000000001 &&
+        vel.y <= 0.0000000001 &&
+        vel.z <= 0.0000000001
+      ) {
+        if (timeBeforeStopIdle == 0) {
+          setTimeBeforeStopIdle(clock.elapsedTime);
+        }
+
+        if (clock.elapsedTime - timeBeforeStopIdle >= 2) {
+          setTimeBeforeStopIdle(0);
+          heliAudio.current.stop();
+          actions[names[0]]?.reset().fadeIn(0.5).stop();
+          actions[names[1]]?.reset().fadeIn(0.5).stop();
+          setStarting(!isStarting);
+        }
       }
 
       if (get().forward) {
@@ -123,9 +137,9 @@ export const CharacterController = () => {
         movement.y += rb.current.translation().y < MAX_Y ? 1 : 0;
       }
 
-      if (get().backward) {
-        movement.z = -0.2;
-      }
+      // if (get().backward) {
+      //   movement.z = -0.2;
+      // }
 
       let speed = !get().boost ? NORMAL_SPEED : BOOST_SPEED;
 
@@ -148,38 +162,47 @@ export const CharacterController = () => {
         movement.x = -1;
       }
 
-      if (movement.x !== 0) {
-        rotationTarget.current += ROT_SPEED * movement.x * 0.5;
+      if (
+        !isStarting &&
+        (get().right || get().left || get().forward || get().backward)
+      ) {
+        setIdleTimeBeforeFlying(clock.elapsedTime);
+        heliAudio.current.play();
+        setStarting(!isStarting);
+        actions[names[0]]?.reset().fadeIn(0.5).play();
+        actions[names[1]]?.reset().fadeIn(0.5).play();
       }
 
-      if (movement.x === 0 || movement.z === 0) {
-        characterRotationTarget.current = 0;
-      }
-
-      if (movement.x !== 0 || movement.z !== 0) {
-        if (!isStarting) {
-          heliAudio.current.play();
-          setStarting(!isStarting);
-          actions[names[0]]?.reset().fadeIn(0.5).play();
-          actions[names[1]]?.reset().fadeIn(0.5).play();
+      if (clock.elapsedTime - idleTimeBeforeFlying >= 2) {
+        setIdleTimeBeforeFlying(0);
+        if (movement.x !== 0) {
+          rotationTarget.current += ROT_SPEED * movement.x * 0.5;
         }
-        characterRotationTarget.current =
-          Math.atan2(movement.x, movement.z) * 0.2;
-        vel.x =
-          Math.sin(rotationTarget.current + characterRotationTarget.current) *
-          speed;
-        vel.z =
-          Math.cos(rotationTarget.current + characterRotationTarget.current) *
-          speed;
-        vel.y = movement.y;
-      }
-      character.current.rotation.z = lerpAngle(
-        character.current.rotation.z,
-        -characterRotationTarget.current,
-        isTouching.current ? 0.03 : 0.01
-      );
 
-      rb.current.setLinvel(vel, true);
+        if (movement.x === 0 || movement.z === 0) {
+          characterRotationTarget.current = 0;
+        }
+
+        if (movement.x !== 0 || movement.z !== 0) {
+          characterRotationTarget.current =
+            Math.atan2(movement.x, movement.z) * 0.2;
+          vel.x =
+            Math.sin(rotationTarget.current + characterRotationTarget.current) *
+            speed;
+          vel.z =
+            Math.cos(rotationTarget.current + characterRotationTarget.current) *
+            speed;
+          vel.y = movement.y;
+        }
+
+        character.current.rotation.z = lerpAngle(
+          character.current.rotation.z,
+          -characterRotationTarget.current,
+          isTouching.current ? 0.03 : 0.01
+        );
+
+        rb.current.setLinvel(vel, true);
+      }
     }
 
     // Camera

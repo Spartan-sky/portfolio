@@ -1,4 +1,4 @@
-import { KeyboardControls, Sky } from "@react-three/drei";
+import { KeyboardControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import Scene from "./components/scene";
 
@@ -15,7 +15,7 @@ function App() {
     <KeyboardControls map={keyboardMap}>
       <Canvas shadows style={{ touchAction: "none" }}>
         {/* <Sky sunPosition={[100, 20, 100]} /> */}
-        <ambientLight intensity={0.3} />
+        <ambientLight intensity={0.4} />
         <directionalLight castShadow position={[20, 2, 2]} />
         <Scene />
       </Canvas>
